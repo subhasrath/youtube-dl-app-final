@@ -41,3 +41,9 @@ python app/main.py
 
 # Create the Debian file
 ./create_deb_package.sh
+
+# 2. Make the desktop icon
+chmod +x desktop-icon-create.sh
+
+# remove deian file
+chmod +x uninstaller.sh

@@ -1,5 +1,6 @@
 cd ~/Desktop/youtube-dl-app-final
-
+# 2. Make the desktop icon
+chmod +x desktop-icon-create.sh
 # Download a proper YouTube icon
 wget -O youtube-icon.png https://cdn-icons-png.flaticon.com/256/1384/1384060.png 2>/dev/null || echo "Using default icon"
 
@@ -26,5 +27,8 @@ Exec=$HOME/Desktop/youtube-dl-app-final/launch_app.sh
 Name=Open Downloads Folder
 Exec=xdg-open $HOME/Downloads
 EOF
+chmod +x ~/Desktop/YouTube-Downloader.desktop
+
+echo "Desktop shortcut created on your desktop!"
 
 update-desktop-database ~/.local/share/applications/
