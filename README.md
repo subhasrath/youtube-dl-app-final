@@ -47,3 +47,18 @@ chmod +x desktop-icon-create.sh
 
 # remove deian file
 chmod +x uninstaller.sh
+
+
+# Automate the installation to uninstallation
+
+# luanch app from command line
+./launch_app.sh
+
+# Create the debian_installer.sh file if not available
+./create_deb_package.sh
+
+# if the debian_installer.sh available
+./debian_installer.sh
+
+# uninstall the app from system
+./uninstaller.sh
