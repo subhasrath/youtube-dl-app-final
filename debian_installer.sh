@@ -1,4 +1,3 @@
-cat > ~/Desktop/youtube-dl-app-final/debian_installer.sh << 'EOF'
 #!/bin/bash
 
 echo "========================================="
@@ -322,6 +321,3 @@ if [[ $REPLY =~ ^[Yy]$ ]]; then
     rm -rf ${PACKAGE_DIR}
     echo "Cleanup complete."
 fi
-EOF
-
-chmod +x ~/Desktop/youtube-dl-app-final/debian_installer.sh
