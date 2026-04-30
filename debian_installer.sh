@@ -46,7 +46,7 @@ mkdir -p ${PACKAGE_DIR}/DEBIAN
 mkdir -p ${PACKAGE_DIR}/usr/local/bin
 mkdir -p ${PACKAGE_DIR}/usr/local/share/${PACKAGE_NAME}
 mkdir -p ${PACKAGE_DIR}/usr/share/applications
-mkdir -p ${PACKAGE_DIR}/usr/share/pixmaps
+mkdir -p ${PACKAGE_DIR}/usr/share/icons/hicolor/256x256/apps
 mkdir -p ${PACKAGE_DIR}/usr/share/doc/${PACKAGE_NAME}
 
 echo -e "${BLUE}[3/8] Creating control file...${NC}"
@@ -94,6 +94,11 @@ fi
 # Make launcher executable
 chmod +x /usr/local/bin/youtube-downloader
 
+# Update icon cache
+if command -v update-icon-caches >/dev/null 2>&1; then
+    update-icon-caches /usr/share/icons/hicolor/
+fi
+
 # Update desktop database
 if command -v update-desktop-database >/dev/null 2>&1; then
     update-desktop-database /usr/share/applications/
@@ -124,6 +129,10 @@ cat > ${PACKAGE_DIR}/DEBIAN/postrm << 'POSTRM'
 # Clean up virtual environment
 if [ -d "/usr/local/share/youtube-downloader-pro/venv" ]; then
     rm -rf /usr/local/share/youtube-downloader-pro/venv
+fi
+# Update icon cache
+if command -v update-icon-caches >/dev/null 2>&1; then
+    update-icon-caches /usr/share/icons/hicolor/
 fi
 echo "YouTube Downloader Pro has been removed"
 exit 0
@@ -180,7 +189,19 @@ chmod +x ${PACKAGE_DIR}/usr/local/bin/youtube-downloader
 
 echo -e "${BLUE}[7/8] Creating desktop entry and icon...${NC}"
 
-# Create desktop entry
+# Download and use a proper PNG icon
+echo "Downloading icon..."
+wget -q -O ${PACKAGE_DIR}/usr/share/icons/hicolor/256x256/apps/youtube-downloader.png https://cdn-icons-png.flaticon.com/256/1384/1384060.png 2>/dev/null || {
+    # If wget fails, create a simple PNG using Python
+    python3 << 'PYICON'
+import base64
+png_data = base64.b64decode('iVBORw0KGgoAAAANSUhEUgAAAIAAAACACAYAAADDPmHLAAAABHNCSVQICAgIfAhkiAAAAAlwSFlzAAAOxAAADsQBlSsOGwAAABl0RVh0U29mdHdhcmUAd3d3Lmlua3NjYXBlLm9yZ5vuPBoAAATdSURBV4nO3dO6gWVRgG4EdEsDQIgiAoFhRBBVEURBFFEURRRFEUQRRFEAVRRFEUQRRFEEVRBFFEUQRRFEEURRAFUQRdLvoFBV5Lc87smT1n5nzPwvLAMjtnd77nP2dmz8wOIYQQQgghhBBCCCGEsA/cvA9gLd2IAegTDAPQJxgGoE8wDECfYBiAPsEwAH2CYQD6BMMA9AmGAegTDAPQJxgGoE8wDECfYBiAPsEwAH2CYQD6BMMA9AmGAegTDAPQJxgGoE8wDECfYBiAPsEwAH2CYQD6BMMA9AmGAegTDAPQJxgGoE8wDECfYBiAPsEwAH2CYQD6BMMA9AmGAegTDAPQJxgGoE8wDECfYBiAPsEwAH2CYQD6BMMA9AmGAegTDAPQJxgGoE8wDECfYBiAPsEwAH2CYQD6BMMA9AmGAegTDAPQJxgGoE8wDECfYBiAPsEwAH2CYQD6BMMA9AmGAegTDAPQJxgGoE8wDECfYBiAPsEwAH2CYQD6BMMA9AmGAegTDAPQJxgGoE8wDECfYBiAPsEwAH2CYQD6BMMA9AmGAegTDAPQJxgGoE8wDECfYBiAPsEwAH2CYQD6BMMA9AmGAegTDAPQJxgGoE8wDECfYBiAPsEwAH2CYQD6BMMA9Imn8+64mzE4eCbYp+aAkH2CYQD6BMMA9AmGAegTDAPQJxgGoE8wDECfYBiAPsEwAH2CYQD6BMMA9AmGAegTDAPQJxgGoE8wDECfYBiAPsEwAH2CYQD6BMMA9AmGAegTDAPQJxgGoE8wDECfYBiAPsEwAH2CYQD6BMMA9AmGAegTDAPQJxgGoE8wDECfYBiAPsEwAH2CYQD6BMMA9AmGAegTDAPQJxgGoE8wDECfYBiAPsEwAH2CYQD6BMMA9AmGAegTDAPQJxgGoE8wDECfYBiAPsEwAH2CYQD6BMMA9AmGAegTDAPQJxgGoE8wDECfYBiAPsEwAH2CYQD6BMMA9AmGAegTDAPQJxgGoE8wDECfYBiAPsEwAH2CYQD6BMMA9AmGAegTDAPQJxgGoE8wDECfYBiAPsEwAH2CYQD6BMMA9AmGAegTDAPQJxgGoE8wDECfYBiAPsEwAH2CYQD6BMMA9AmGAegTDAPQJxgGoE8wDECfYBiAPsEwAH2CYQD6BMMA9AmGAegTDAPQJxgGoE8wDECfYBiAPsEwAH2CYQD6BMMA9AmGAegTDAPQJxgGoE8wDECfYBiAPsEwAH2CYQD6BMMA9AmGAegTDAPQJxgGoE8wDECfYBiAPsEwAH2CYQD6BMMA9AmGAegTDAPQJxgGoE8wDECfYBiAPsE+8A5wOnAUcDfwIXA98BvwN/BgEwI7AfOAgYDEwP7vhL4FPgfuBh4B96fFtgHnA+sD0bL73gUeBO4AdgPfobO/GWcD2wLQ8phDnA/W/a7eJx/LqAd4B5uRxPA38l33/iU7+HcAxwFrvP5cCzwMnZD/+LgAb57EqcLKKwU5xEnBm9vNFwMlqKocryAJPAJeKeVwO9J5kq8D7wHI9gA+rpQ2TjxM7+aE3b/oF8Mq4RrbgG/XT0PVpM5dNOh+U9dQ/Z01qKp+O+2vW0P+CHgDmT3hM88C/Jv02dAYD0CcYBqBPMAxAn2AYgD7BMAB9gmEA+gTDAIQx/geg0fSyaqzmBwAAAABJRU5ErkJggg==')
+with open('/usr/local/share/youtube-downloader-pro/youtube-icon.png', 'wb') as f:
+    f.write(png_data)
+PYICON
+}
+
+# Create desktop entry with correct icon path
 cat > ${PACKAGE_DIR}/usr/share/applications/youtube-downloader.desktop << 'DESKTOP'
 [Desktop Entry]
 Version=1.0
@@ -196,51 +217,13 @@ Keywords=youtube;downloader;video;mp4;mp3;
 MimeType=x-scheme-handler/https;
 DESKTOP
 
-# Create icon
-cat > ${PACKAGE_DIR}/usr/share/pixmaps/youtube-downloader.xpm << 'XPM'
-/* XPM */
-static char *youtube_downloader[] = {
-"64 64 3 1",
-". c #FF0000",
-"o c #FFFFFF",
-"  c None",
-"................................................",
-"................................................",
-"....................oooo.....................",
-"..................oooooooo...................",
-"................oooooooooooo.................",
-"..............oooooooooooooooo...............",
-"............oooooooooooooooooooo.............",
-"..........oooooooooooooooooooooooo...........",
-"........oooooooooooooooooooooooooooo.........",
-"......oooooooooooooooooooooooooooooooo.......",
-".....oooooooooooooooooooooooooooooooooo......",
-"....oooooooooooooooooooooooooooooooooooo.....",
-"...oooooooooooooooooooooooooooooooooooooo....",
-"..oooooooooooooooooooooooooooooooooooooooo...",
-"..oooooooooooooooooooooooooooooooooooooooo...",
-".oooooooooooooooooooooooooooooooooooooooooo..",
-".oooooooooooooooooooooooooooooooooooooooooo..",
-".oooooooooooooooooooooooooooooooooooooooooo..",
-".oooooooooooooooooooooooooooooooooooooooooo..",
-".oooooooooooooooooooooooooooooooooooooooooo..",
-"..oooooooooooooooooooooooooooooooooooooooo...",
-"..oooooooooooooooooooooooooooooooooooooooo...",
-"...oooooooooooooooooooooooooooooooooooooo....",
-"....oooooooooooooooooooooooooooooooooooo.....",
-".....oooooooooooooooooooooooooooooooooo......",
-"......oooooooooooooooooooooooooooooooo.......",
-"........oooooooooooooooooooooooooooo.........",
-"..........oooooooooooooooooooooooo...........",
-"............oooooooooooooooooooo.............",
-"..............oooooooooooooooo...............",
-"................oooooooooooo.................",
-"..................oooooooo...................",
-"....................oooo.....................",
-"................................................",
-"................................................"
-};
-XPM
+# Create icon symlink for the icon
+cat > ${PACKAGE_DIR}/usr/share/icons/hicolor/256x256/apps/youtube-downloader.png << 'PNGICON'
+[This will be replaced by the downloaded icon]
+PNGICON
+
+# Actually download the icon properly
+wget -O ${PACKAGE_DIR}/usr/share/icons/hicolor/256x256/apps/youtube-downloader.png https://cdn-icons-png.flaticon.com/256/1384/1384060.png 2>/dev/null || echo "Icon download skipped"
 
 # Create documentation
 cat > ${PACKAGE_DIR}/usr/share/doc/${PACKAGE_NAME}/README << 'README'
@@ -285,6 +268,9 @@ if [ -f "${PACKAGE_DIR}.deb" ]; then
         echo -e "${YELLOW}Fixing missing dependencies...${NC}"
         sudo apt-get install -f -y
     fi
+    
+    # Update icon cache
+    sudo update-icon-caches /usr/share/icons/hicolor/ 2>/dev/null || true
     
     echo ""
     echo "========================================="
