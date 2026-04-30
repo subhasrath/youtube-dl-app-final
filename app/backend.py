@@ -4,6 +4,27 @@ from threading import Event
 from typing import Optional, Dict, Callable
 import time
 
+class YTDLPLogger:
+    def __init__(self, callback):
+        self.callback = callback
+
+    def debug(self, msg):
+        self._handle(msg)
+
+    def warning(self, msg):
+        self._handle(msg)
+
+    def error(self, msg):
+        self._handle(msg)
+
+    def _handle(self, msg):
+        # Detect playlist progress
+        if "Downloading item" in msg:
+            self.callback({
+                "status": "playlist_progress",
+                "message": msg
+            })
+
 class YouTubeDownloader:
     def __init__(self):
         """
@@ -20,15 +41,22 @@ class YouTubeDownloader:
         Progress callback for yt-dlp.
         Handles pause/resume and updates progress.
         """
-        if d['status'] == 'downloading':
+        if not callback:
+            return
+        status = d.get('status')
+
+        if status == 'downloading':
             while not self.pause_event.is_set() and self.download_active:
                 callback({"status": "paused"})
                 self.pause_event.wait(0.1)
             
             if not self.download_active:
-                raise Exception("Download cancelled")
+                raise Exception("CANCELLED_BY_USER")
                 
             callback(d)
+
+        elif status == 'finished':
+            callback({"status": "finished", "filename": d.get('filename')})
     
     def download_video(
         self,
@@ -52,6 +80,7 @@ class YouTubeDownloader:
                 'format': self._get_format_string(format),
                 'outtmpl': os.path.join(output_path, '%(title)s.%(ext)s'),
                 'progress_hooks': [lambda d: self._progress_hook(d, progress_callback)], # type: ignore
+                'logger': YTDLPLogger(progress_callback),
                 'noprogress': False,
                 'quiet': False,
                 'no_warnings': False,

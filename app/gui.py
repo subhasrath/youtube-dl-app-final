@@ -343,21 +343,64 @@ class ModernYouTubeDownloaderGUI:
     
     def _progress(self, data: Dict):
         """Handle progress updates"""
-        if data["status"] == "downloading":
-            percent_str = data.get("_percent_str", "0%")
-            clean = re.sub(r'\x1b\[[0-9;]*m', '', percent_str)
-            try:
-                percent = float(clean.replace("%", ""))
-            except ValueError:
+        status = data.get("status")
+        if status == "downloading":
+            downloaded = data.get("downloaded_bytes", 0)
+            total = data.get("total_bytes") or data.get("total_bytes_estimate")
+            if total:
+                percent = (downloaded / total) * 100
+            else:
                 percent = 0.0
+
+            # percent_str = data.get("_percent_str", "0%")
+            # clean = re.sub(r'\x1b\[[0-9;]*m', '', percent_str)
+            # try:
+            #     percent = float(clean.replace("%", ""))
+            # except ValueError:
+            #     percent = 0.0
             
             speed = data.get("_speed_str", "N/A")
             eta = data.get("_eta_str", "N/A")
-            
             self._queue(("progress", percent))
-            self._queue(("status", f"📥 Downloading: {percent_str}"))
+            self._queue(("status", f"📥 Downloading: {percent:.1f}%"))
             self._queue(("speed", f"⚡ {speed} | ⏱️ ETA: {eta}"))
-    
+
+            if int(percent) % 5 == 0:
+                self._queue((
+                    "log",
+                    f"📥 {percent:.1f}% | {speed} | ETA {eta}",
+                    "info"
+                ))
+        elif status == "playlist_progress":
+            msg = data.get("message", "")
+
+            msg = re.sub(r'\x1b\[[0-9;]*m', '', msg)
+            match = re.search(r'item (\d+) of (\d+)', msg)
+
+            if match:
+                current, total = match.groups()
+                display = f"📂 Playlist: {current}/{total}"
+
+                try:
+                    percent = (int(current) / int(total)) * 100
+                    self._queue(("progress", percent))
+                except:
+                    pass
+            else:
+                display = msg
+            self._queue(("log", display, "info"))
+            self._queue(("status", display))
+
+        elif status == "finished":
+            self._queue(("log", "🔄 Processing file...", "info"))
+            self._queue(("status", "🔄 Processing..."))
+        elif status == "paused":
+            self._queue(("status", "⏸️ Paused"))
+            
+
+
+            
+
     def _pause(self):
         """Pause download"""
         self.downloader.pause()
