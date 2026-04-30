@@ -1,5 +1,7 @@
 # Complete Working Setup
 Here's the simplest working approach:
+# locaion to download and setup the downloader
+desktop
 
 # Step 1: Create virtual environment
 cd ~/Desktop/youtube-dl-app-final
